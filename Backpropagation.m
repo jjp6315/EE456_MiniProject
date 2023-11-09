@@ -13,5 +13,3 @@ learningRate = 0.1;
 
 load('DataSet1_MP1.mat');
 
-
-s
