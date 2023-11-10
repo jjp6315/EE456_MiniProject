@@ -23,7 +23,7 @@ weights_hidden_output = randn(numHiddenLayer, numOutputLayer);
 
 
 biases_hidden = -ones(numHiddenLayer, 1);
-biases_output = -ones(numOutputLayer, 1);
+biases_output = -1;
 
 flag = 1;
 
@@ -40,7 +40,8 @@ flag = 1;
 
 hidden_layer_input = zeros(numHiddenLayer, 1);
 
-
+% Step 3
+% Step 4
 for x = 1:numHiddenLayer
     for i = 1:numData
         hidden_layer_input(x, 1) = hidden_layer_input(x, 1) + DataSet1(i, 1) * weights_input_hidden(1, x) + DataSet1(i, 2) * weights_input_hidden(2, x);
@@ -49,7 +50,7 @@ for x = 1:numHiddenLayer
 end
 hidden_layer_output = tanh(hidden_layer_input);
 
-
+% Step 5
 output_layer = zeros(numOutputLayer, 1);
 
 for y = 1:numHiddenLayer
@@ -57,12 +58,36 @@ for y = 1:numHiddenLayer
 end
 output_layer(1, 1) = output_layer(1, 1) + biases_output(1, 1);
 
-class_out = tanh(output_layer);
+class_out = tanh(output_layer(1, 1));
 
 % disp(class_out);
 % disp(DataSet1_targets(1));
 
 % disp(hidden_layer_output);
+
+
+% ___________________________________
+% Backpropagation section
+
+% Error at Output layer = (targetoutput_k - classout_k) * derivative of
+% hyperbolic tangent function
+
+
+% weight correction between hidden layer and output layer
+
+error_at_output_layer = zeros(6000, 1);
+weight_change_hiddent_to_output = zeros(numHiddenLayer, 6000);
+
+derivative_function = 0.5 * (1 + output_layer(1, 1)) * (1 - output_layer(1, 1));
+
+for k = 1:6000
+    error_at_output_layer(k, 1) = (DataSet1_targets(k) - class_out) * derivative_function;
+    for j = 1:numHiddenLayer
+        weight_change_hiddent_to_output(j, k) = learningRate * error_at_output_layer(k, 1) * hidden_layer_output(j, 1);
+    end
+    biases_output = learningRate * error_at_output_layer;
+end
+
 
 % while flag
 %     hidden_layer_input = DataSet1 * weights_input_hidden + biases_hidden;
