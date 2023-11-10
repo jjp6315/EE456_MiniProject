@@ -38,55 +38,65 @@ flag = 1;
 
 % The last criterion is testing for generalization performance after each epoch. 
 
-hidden_layer_input = zeros(numHiddenLayer, 1);
+z_in_j= zeros(numHiddenLayer, 1);
 
 % Step 3
 % Step 4
-for x = 1:numHiddenLayer
-    for i = 1:numData
-        hidden_layer_input(x, 1) = hidden_layer_input(x, 1) + DataSet1(i, 1) * weights_input_hidden(1, x) + DataSet1(i, 2) * weights_input_hidden(2, x);
+for i = 1:numData
+    z_in_j= zeros(numHiddenLayer, 1);
+
+    for x = 1:numHiddenLayer
+        z_in_j(x, 1) = z_in_j(x, 1) + DataSet1(i, 1) * weights_input_hidden(1, x) + DataSet1(i, 2) * weights_input_hidden(2, x);
+        z_in_j(x, 1) = z_in_j(x, 1) + biases_hidden(x, 1);
     end
-    hidden_layer_input(x, 1) = hidden_layer_input(x, 1) + biases_hidden(x, 1);
-end
-hidden_layer_output = tanh(hidden_layer_input);
-
-% Step 5
-output_layer = zeros(numOutputLayer, 1);
-
-for y = 1:numHiddenLayer
-    output_layer(1, 1) = output_layer(1, 1) + hidden_layer_output(y, 1) * weights_hidden_output(y, 1);
-end
-output_layer(1, 1) = output_layer(1, 1) + biases_output(1, 1);
-
-class_out = tanh(output_layer(1, 1));
-
-% disp(class_out);
-% disp(DataSet1_targets(1));
-
-% disp(hidden_layer_output);
+    
+    z_j = tanh(z_in_j);
 
 
-% ___________________________________
-% Backpropagation section
+    % disp(z_j);
+    
+    % Step 5
+    y_in_k = zeros(numOutputLayer, 1);
+    
+    for y = 1:numHiddenLayer
+        y_in_k(1, 1) = y_in_k(1, 1) + z_j(y, 1) * weights_hidden_output(y, 1);
+    end
+    y_in_k(1, 1) = y_in_k(1, 1) + biases_output(1, 1);
+    
+    y_k= tanh(y_in_k(1, 1));
+    
+    % disp(class_out);
+    % disp(DataSet1_targets(1));
+    
+    % disp(hidden_layer_output);
+    
+    
+    % ___________________________________
+    % Backpropagation section
+    
+    % Error at Output layer = (targetoutput_k - classout_k) * derivative of
+    % hyperbolic tangent function
+    
+    
+    % weight correction between hidden layer and output layer
+    
+    weight_change_hiddent_to_output = zeros(numHiddenLayer, 1);
+    
+    derivative_function = 0.5 * (1 + y_in_k(1, 1)) * (1 - y_in_k(1, 1));
+    
+    
+    error_at_output_layer = (DataSet1_targets(i) - y_k) * derivative_function;
 
-% Error at Output layer = (targetoutput_k - classout_k) * derivative of
-% hyperbolic tangent function
-
-
-% weight correction between hidden layer and output layer
-
-error_at_output_layer = zeros(6000, 1);
-weight_change_hiddent_to_output = zeros(numHiddenLayer, 6000);
-
-derivative_function = 0.5 * (1 + output_layer(1, 1)) * (1 - output_layer(1, 1));
-
-for k = 1:6000
-    error_at_output_layer(k, 1) = (DataSet1_targets(k) - class_out) * derivative_function;
     for j = 1:numHiddenLayer
-        weight_change_hiddent_to_output(j, k) = learningRate * error_at_output_layer(k, 1) * hidden_layer_output(j, 1);
+        weight_change_hiddent_to_output(j, 1) = learningRate * error_at_output_layer * z_j(j, 1);
     end
+
     biases_output = learningRate * error_at_output_layer;
+
+    % Step 7
+
 end
+
 
 
 % while flag
