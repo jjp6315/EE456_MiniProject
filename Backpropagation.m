@@ -9,13 +9,13 @@ numData = 6000;
 % Activation Function is a hyperbolic tangent function
 % Threshold = 0
 
-learningRate = 0.6;
+learningRate = 1.6;
 
 load('DataSet1_MP1.mat');
-epochs = 0;
+epochs = 1;
 TrainingError = zeros(epochs, 1);
 ValidationError = zeros(epochs, 1);
-
+validation_error_accumulated = 0;
 
 % Step 1
 weights_input_hidden = randn(numInputLayer, numHiddenLayer);
@@ -83,7 +83,11 @@ for i = 1:numData
     
     derivative_function1 = 0.5 * (1 + y_in_k(1, 1)) * (1 - y_in_k(1, 1));
     
+    
     error_k = (DataSet1_targets(i) - y_k) * derivative_function1;
+
+    validation_error_example = (y_k - DataSet1_targets(i))^2;
+    ValidationError(epochs) = validation_error_example;
 
     for j = 1:numHiddenLayer
         weight_change_hiddent_to_output(j, 1) = learningRate * error_k * z_j(j, 1);
@@ -118,12 +122,18 @@ for i = 1:numData
     weights_input_hidden = weights_input_hidden + weight_change_input_to_hidden;
     weights_hidden_output = weights_hidden_output + weight_change_hiddent_to_output;
     learningRate = learningRate * 0.1;
+
+    epochs = epochs + 1;
 end
 
-% disp(weights_input_hidden);
-
-
-
+disp(size(ValidationError));
+% Plot the validation errors
+figure;
+plot(1:6000, ValidationError, '-o', 'LineWidth', 2);
+title('Validation Errors for Each Data Point');
+xlabel('Data Points');
+ylabel('Validation Error');
+grid on;
 
 % while flag
 %     hidden_layer_input = DataSet1 * weights_input_hidden + biases_hidden;
