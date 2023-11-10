@@ -9,7 +9,7 @@ numData = 6000;
 % Activation Function is a hyperbolic tangent function
 % Threshold = 0
 
-learningRate = 0.1;
+learningRate = 0.6;
 
 load('DataSet1_MP1.mat');
 epochs = 0;
@@ -43,6 +43,7 @@ z_in_j= zeros(numHiddenLayer, 1);
 % Step 3
 % Step 4
 for i = 1:numData
+    
     z_in_j= zeros(numHiddenLayer, 1);
 
     for x = 1:numHiddenLayer
@@ -56,46 +57,71 @@ for i = 1:numData
     % disp(z_j);
     
     % Step 5
-    y_in_k = zeros(numOutputLayer, 1);
+    y_in_k = 0;
     
     for y = 1:numHiddenLayer
-        y_in_k(1, 1) = y_in_k(1, 1) + z_j(y, 1) * weights_hidden_output(y, 1);
+        y_in_k0 = y_in_k + z_j(y, 1) * weights_hidden_output(y, 1);
+        % disp(y_in_k(1, 1));
     end
-    y_in_k(1, 1) = y_in_k(1, 1) + biases_output(1, 1);
+    y_in_k = y_in_k + biases_output;
     
-    y_k= tanh(y_in_k(1, 1));
+    y_k= tanh(y_in_k);
     
-    % disp(class_out);
-    % disp(DataSet1_targets(1));
+    % disp(biases_output);
+    % disp(y_k);
     
-    % disp(hidden_layer_output);
+    
     
     
     % ___________________________________
     % Backpropagation section
-    
-    % Error at Output layer = (targetoutput_k - classout_k) * derivative of
-    % hyperbolic tangent function
     
     
     % weight correction between hidden layer and output layer
     
     weight_change_hiddent_to_output = zeros(numHiddenLayer, 1);
     
-    derivative_function = 0.5 * (1 + y_in_k(1, 1)) * (1 - y_in_k(1, 1));
+    derivative_function1 = 0.5 * (1 + y_in_k(1, 1)) * (1 - y_in_k(1, 1));
     
-    
-    error_at_output_layer = (DataSet1_targets(i) - y_k) * derivative_function;
+    error_k = (DataSet1_targets(i) - y_k) * derivative_function1;
 
     for j = 1:numHiddenLayer
-        weight_change_hiddent_to_output(j, 1) = learningRate * error_at_output_layer * z_j(j, 1);
+        weight_change_hiddent_to_output(j, 1) = learningRate * error_k * z_j(j, 1);
     end
 
-    biases_output = learningRate * error_at_output_layer;
+    biases_output = learningRate * error_k;
+
+
 
     % Step 7
+    error_in_j = zeros(numHiddenLayer, 1);
 
+    for k = 1:numHiddenLayer
+        error_in_j(k, 1) = error_in_j(k, 1) + derivative_function1 * weights_hidden_output(k, 1); % I dont know if its the gradient weight or the original weight we have here
+    end
+    % disp(derivative_function1);
+    derivative_function2 = 0.5 * (1 + z_in_j(1, 1)) * (1 - z_in_j(1, 1));
+    
+    weight_change_input_to_hidden = zeros(2, numHiddenLayer);
+    
+    error_information_value = zeros(numHiddenLayer, 1);
+    for k = 1:numHiddenLayer
+        error_information_value(k, 1) = error_in_j(k, 1) * derivative_function2;
+        weight_change_input_to_hidden(1, k) = learningRate * error_information_value(k, 1) * DataSet1(i, 1);
+        weight_change_input_to_hidden(2, k) = learningRate * error_information_value(k, 1) * DataSet1(i, 2);
+        biases_hidden(k, 1) = learningRate * error_information_value(k, 1);
+    end
+
+    % disp(weight_change_input_to_hidden);
+    
+    % Step 8 Update Weights and Bias
+    weights_input_hidden = weights_input_hidden + weight_change_input_to_hidden;
+    weights_hidden_output = weights_hidden_output + weight_change_hiddent_to_output;
+    learningRate = learningRate * 0.1;
 end
+
+% disp(weights_input_hidden);
+
 
 
 
