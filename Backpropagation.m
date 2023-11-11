@@ -10,14 +10,14 @@ numHiddenNeurons = 20;
 numOutputNeurons = 1;
 
 % properties of the NN
-learningRate = 0.1;
-% we have 6000 pairs of data
-epochs = 20;
+learningRate = 0.0001;
+epochs = 1000;
 
 % Threshold = 0
 theta = 0;
 % annealed linearly from 10^-1 down to 10^-5
 annealRate = (0.1-0.00001)/epochs;
+% annealRate = 0;
 
 % setting the weights
 w1 = randn(numHiddenNeurons, numInputNeurons);
@@ -25,12 +25,12 @@ b1 = randn(numHiddenNeurons, 1);
 w2 = randn(numOutputNeurons, numHiddenNeurons);
 b2 = randn(numOutputNeurons, 1);
 
-total_loss = zeros(epochs);
+total_errors = zeros(epochs);
 iteration = zeros(epochs);
 
 % start the training
 for epoch = 1:epochs
-    losses = 0;
+    error = 0;
     for index = 1:6000
         % getting the input and target
         x = DataSet1(epoch, :);
@@ -46,32 +46,54 @@ for epoch = 1:epochs
         loss = (a2-y)^2;
     
         % back pass
-        delta2 = (a2-y) * (1-tanh(a2)^2);
-        delta1 = (w2'*delta2) .* (1-tanh(a1).^2);
+        % output to hidden layer (delta2 => 20x1)
+        delta2 = (a2-y) * der_tanh(w2 * a1 + b2);
+        delta2w = learningRate .* (delta2 .* a1);
+        delta2b = learningRate * delta2;
+        % hidden to input layer (delta1 => 20x1)
+        temp = delta2 .* w2'; % 20x1
+        delta1 = temp .* der_tanh((w1 * x') + b1);
+        delta1w = zeros(20, 2);
+        for row = 1:20
+            for column = 1:2
+                delta1w(row, column) = learningRate * delta1(row) * x(column);
+            end
+        end
+        delta1b = learningRate .* delta1;
     
         % update the weights and bias
-        w2 = w2 - learningRate .* (delta2 * a1');
-        b2 = b2 - learningRate .* (sum(delta2, 2));
-        w1 = w1 - learningRate .* (delta1 * x);
-        b1 = b1 - learningRate .* (sum(delta1, 2));
+        w2 = w2 + delta2w';
+        b2 = b2 + delta2b;
+        w1 = w1 + delta1w;
+        b1 = b1 + delta1b;
     
         % update the learning rate
-        learningRate = learningRate + annealRate;
+        learningRate = learningRate - annealRate;
     
         % keep track of the losses
-        losses = losses + loss;
+        error = error + (a2-y)^2;
     end
-    total_loss(epoch) = losses;
+    disp(w2);
+    total_errors(epoch) = error/6000;
     iteration(epoch) = epoch;
 end
 
 % plotting the losses
 figure;
-plot(iteration, total_loss, '-o', 'LineWidth', 2);
+plot(iteration, total_errors, '-o');
 title('Error Plot over Epochs');
 xlabel('Epochs');
 ylabel('Error');
 grid on;
+
+function out = der_tanh(x)
+    s = size(x);
+    out = zeros(s);
+
+    for i = 1:s(1)
+        out(i) = (1+tanh(x(i)))*(1-tanh(x(i)))/2;
+    end
+end
 
 
 
