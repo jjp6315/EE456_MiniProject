@@ -2,13 +2,13 @@ clear;
 clc;
 close all;
 
-load('DataSet1_MP1.mat');
+load('DataSet2_MP1.mat');
 
 % handle the data
-inputClass1 = DataSet1(1:3000, :);
-inputClass2 = DataSet1(3001:6000, :);
-targetClass1 = DataSet1_targets(1:3000);
-targetClass2 = DataSet1_targets(3001:6000);
+inputClass1 = DataSet2(1:3000, :);
+inputClass2 = DataSet2(3001:6000, :);
+targetClass1 = DataSet2_targets(1:3000);
+targetClass2 = DataSet2_targets(3001:6000);
 
 inputTrain = zeros(4800, 2);
 inputVal = zeros(1200, 2);
@@ -32,7 +32,7 @@ numOutputNeurons = 1;
 
 % properties of the NN
 learningRate = 0.1;
-epochs = 50;
+epochs = 1500;
 
 % annealed linearly from 10^-1 down to 10^-5
 annealRate = (0.1-0.00001)/epochs;
@@ -54,8 +54,8 @@ for epoch = 1:epochs
     error_train = 0;
     for index = 1:4800
         % getting the input and target
-        x = inputTrain(epoch, :);
-        y = targetTrain(epoch);
+        x = inputTrain(index, :);
+        y = targetTrain(index);
     
         % forward pass
         % input layer to hidden layer (z_j => 20x1)
@@ -96,8 +96,8 @@ for epoch = 1:epochs
         error_val = 0;
         for index = 1:1200
             % getting the input and target
-            x = inputVal(epoch, :);
-            y = targetVal(epoch);
+            x = inputVal(index, :);
+            y = targetVal(index);
         
             % forward pass
             % input layer to hidden layer (z_j => 20x1)
@@ -157,6 +157,62 @@ title('Error Plot over Epochs (val)');
 xlabel('Epochs');
 ylabel('Error');
 grid on;
+
+
+
+
+% Create a grid of points to evaluate the decision boundary
+[x1, x2] = meshgrid(linspace(min(DataSet2(:, 1)), max(DataSet2(:, 1)), 100), ...
+                    linspace(min(DataSet2(:, 2)), max(DataSet2(:, 2)), 100));
+x_grid = [x1(:), x2(:)];
+
+% Forward pass to get predictions for each point in the grid
+predictions = zeros(size(x_grid, 1), 1);
+for i = 1:size(x_grid, 1)
+    x = x_grid(i, :);
+    
+    % Forward pass
+    z_in_j = (w1 * x') + b1;
+    z_j = tanh(z_in_j);
+    y_in_k = w2 * z_j + b2;
+    y_k = tanh(y_in_k);
+    
+    predictions(i) = y_k;
+end
+
+% Reshape predictions to the grid shape
+predictions_grid = reshape(predictions, size(x1));
+
+% Plot the data points
+figure;
+scatter(DataSet2(:, 1), DataSet2(:, 2), 20, DataSet2_targets, 'filled');
+hold on;
+
+% Contour plot for decision boundary
+contour(x1, x2, predictions_grid, [0.5 0.5], 'k', 'LineWidth', 2);
+
+title('Decision Boundary');
+xlabel('Feature 1');
+ylabel('Feature 2');
+colorbar;
+grid on;
+hold off;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function out = der_tanh(x)
     s = size(x);
