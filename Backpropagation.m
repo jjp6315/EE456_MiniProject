@@ -2,28 +2,45 @@ clear;
 clc;
 close all;
 
+% loading datasets
 load('DataSet1_MP1.mat');
 
+% propertiees of the NN
 numInputLayer = 2;
 numHiddenLayer = 20;
 numOutputLayer = 1;
-% Activation Function is a hyperbolic tangent function
-% Threshold = 0
 epochs = 1000;
-
 learningRate = 0.1;
 annealRate = (0.1-0.00001)/epochs;
 
-
+% track of errors
 TrainingError = zeros(epochs, 1);
 ValidationError = zeros(epochs, 1);
-validation_error_accumulated = 0;
 
-% Step 1
+% handle the data
+inputClass1 = DataSet1(1:3000, :);
+inputClass2 = DataSet1(3001:6000, :);
+targetClass1 = DataSet1_targets(1:3000);
+targetClass2 = DataSet1_targets(3001:6000);
+
+inputTrain = zeros(4800, 2);
+inputVal = zeros(1200, 2);
+targetTrain = zeros(4800);
+targetVal = zeros(1200);
+
+inputTrain(1:2400, :) = inputClass1(1:2400, :);
+inputTrain(2401:4800, :) = inputClass2(1:2400, :);
+targetTrain(1:2400) = targetClass1(1:2400, :);
+targetTrain(2401:4800) = targetClass2(1:2400, :);
+
+inputVal(1:600, :) = inputClass1(2401:3000, :);
+inputVal(601:1200, :) = inputClass2(2401:3000, :);
+targetVal(1:600) = targetClass1(2401:3000, :);
+targetVal(601:1200) = targetClass2(2401:3000, :);
+
+% Step 1 set the weights and bias
 weights_input_hidden = randn(numInputLayer, numHiddenLayer);
 weights_hidden_output = randn(numHiddenLayer, numOutputLayer);
-
-
 biases_hidden = randn(numHiddenLayer, 1);
 biases_output = randn(numOutputLayer, 1);
 
@@ -34,6 +51,7 @@ biases_output = randn(numOutputLayer, 1);
 % Step 3
 % Step 4
 
+% start training
 for epoch = 1:epochs
 
     training_error_accumulated = 0;
@@ -116,7 +134,7 @@ end
 
 % Plotting the training error
 figure;
-plot(1:epochs, TrainingError, '-o', 'LineWidth', 2);
+plot(1:epochs, TrainingError);
 title('Training Error Across Epochs');
 xlabel('Epoch');
 ylabel('Training Error');
