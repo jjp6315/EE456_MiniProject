@@ -10,14 +10,11 @@ numHiddenNeurons = 20;
 numOutputNeurons = 1;
 
 % properties of the NN
-learningRate = 0.0001;
+learningRate = 0.1;
 epochs = 1000;
 
-% Threshold = 0
-theta = 0;
 % annealed linearly from 10^-1 down to 10^-5
 annealRate = (0.1-0.00001)/epochs;
-% annealRate = 0;
 
 % setting the weights
 w1 = randn(numHiddenNeurons, numInputNeurons);
@@ -37,42 +34,40 @@ for epoch = 1:epochs
         y = DataSet1_targets(epoch);
     
         % forward pass
-        % input layer to hidden layer (a1 => 20x1)
-        a1 = tanh((w1 * x') + b1);
+        % input layer to hidden layer (z_j => 20x1)
+        z_in_j = (w1 * x') + b1; % 20x1
+        z_j = tanh(z_in_j); % 20x1
         % hidden layer to output layer (a2 => 1x1)
-        a2 = tanh(w2 * a1 + b2);    
-    
-        % compute the loss (using MSE)
-        loss = (a2-y)^2;
-    
+        y_in_k = w2 * z_j + b2; % 1x1
+        y_k = tanh(y_in_k); % 1x1
+
         % back pass
-        % output to hidden layer (delta2 => 20x1)
-        delta2 = (a2-y) * der_tanh(w2 * a1 + b2);
-        delta2w = learningRate .* (delta2 .* a1);
-        delta2b = learningRate * delta2;
-        % hidden to input layer (delta1 => 20x1)
-        temp = delta2 .* w2'; % 20x1
-        delta1 = temp .* der_tanh((w1 * x') + b1);
-        delta1w = zeros(20, 2);
+        % output to hidden layer (delta_k => 20x1)
+        delta_k = (y - y_k) * der_tanh(y_in_k); % 1x1
+        change_w_jk = learningRate * (delta_k .* z_j); % 20x1
+        change_w_0k = learningRate * delta_k; %1x1
+        % hidden to input layer (delta_j => 20x1)
+        delta_in_j = delta_k .* w2'; % 20x1
+        delta_j = delta_in_j .* der_tanh(z_in_j); % 20x1
+        change_alpha_ij = zeros(20, 2); % 20x2
         for row = 1:20
             for column = 1:2
-                delta1w(row, column) = learningRate * delta1(row) * x(column);
+                change_alpha_ij(row, column) = learningRate * delta_j(row) * x(column);
             end
         end
-        delta1b = learningRate .* delta1;
+        change_alpha_0j = learningRate .* delta_j; % 20x1
     
         % update the weights and bias
-        w2 = w2 + delta2w';
-        b2 = b2 + delta2b;
-        w1 = w1 + delta1w;
-        b1 = b1 + delta1b;
-    
-        % update the learning rate
-        learningRate = learningRate - annealRate;
+        w2 = w2 + change_w_jk'; % 1x20
+        b2 = b2 + change_w_0k; % 1x1
+        w1 = w1 + change_alpha_ij; % 20x2
+        b1 = b1 + change_alpha_0j; % 20x1
     
         % keep track of the losses
-        error = error + (a2-y)^2;
+        error = error + (y_k-y)^2;
     end
+    % update the learning rate
+    learningRate = learningRate - annealRate;
     disp(w2);
     total_errors(epoch) = error/6000;
     iteration(epoch) = epoch;
@@ -80,7 +75,7 @@ end
 
 % plotting the losses
 figure;
-plot(iteration, total_errors, '-o');
+plot(iteration, total_errors);
 title('Error Plot over Epochs');
 xlabel('Epochs');
 ylabel('Error');
@@ -91,7 +86,7 @@ function out = der_tanh(x)
     out = zeros(s);
 
     for i = 1:s(1)
-        out(i) = (1+tanh(x(i)))*(1-tanh(x(i)))/2;
+        out(i) = 0.5*(1+tanh(x(i)))*(1-tanh(x(i)));
     end
 end
 
