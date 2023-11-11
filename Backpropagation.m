@@ -52,33 +52,36 @@ biases_output = randn(numOutputLayer, 1);
 % Step 4
 
 % start training
-testCounter = 0;
+testCounter = 1;
 for epoch = 1:epochs
 
-    % if mod(epoch, 5) == 0
-    %     for i = 1:1200
-    % 
-    %         z_in_j= zeros(numHiddenLayer, 1);
-    % 
-    %         for x = 1:numHiddenLayer
-    %             z_in_j(x, 1) = z_in_j(x, 1) + inputTrain(i, 1) * weights_input_hidden(1, x) + inputTrain(i, 2) * weights_input_hidden(2, x);
-    %             z_in_j(x, 1) = z_in_j(x, 1) + biases_hidden(x, 1);
-    %         end
-    % 
-    %         z_j = tanh(z_in_j);
-    % 
-    % 
-    %         % Step 5
-    %         y_in_k = 0;
-    % 
-    %         for y = 1:numHiddenLayer
-    %             y_in_k = y_in_k + z_j(y, 1) * weights_hidden_output(y, 1);
-    %         end
-    %         y_in_k = y_in_k + biases_output(1, 1);
-    % 
-    %         y_k= tanh(y_in_k);
-    %     end
-    % end
+    if mod(epoch, 5) == 0
+
+        z_in_j= zeros(numHiddenLayer, 1);
+
+        for x = 1:numHiddenLayer
+            z_in_j(x, 1) = z_in_j(x, 1) + inputTrain(testCounter, 1) * weights_input_hidden(1, x) + inputTrain(testCounter, 2) * weights_input_hidden(2, x);
+            z_in_j(x, 1) = z_in_j(x, 1) + biases_hidden(x, 1);
+        end
+
+        z_j = tanh(z_in_j);
+
+
+        % Step 5
+        y_in_k = 0;
+
+        for y = 1:numHiddenLayer
+            y_in_k = y_in_k + z_j(y, 1) * weights_hidden_output(y, 1);
+        end
+        y_in_k = y_in_k + biases_output(1, 1);
+
+        y_k= tanh(y_in_k);
+
+        testCounter = testCounter + 1;
+
+        validation_error = 0.5 * (targetTrain(i) - y_k)^2;
+        ValidationError(epoch) = training_error_accumulated / 6000;
+    end
 
 
 
@@ -150,8 +153,7 @@ for epoch = 1:epochs
                 weights_hidden_output(q, 1) = weights_hidden_output(q, 1) + delta_w_jk(q, 1);
             end
         end
-        % disp(weights_input_hidden);
-        % disp(weights_hidden_output);
+     
                 
         training_error_accumulated = training_error_accumulated + 0.5 * (targetTrain(i) - y_k)^2;
     end
@@ -160,11 +162,5 @@ for epoch = 1:epochs
 end
 
 
-% Plotting the training error
-figure;
-plot(1:epochs, TrainingError);
-title('Training Error Across Epochs');
-xlabel('Epoch');
-ylabel('Training Error');
-grid on;
+
 

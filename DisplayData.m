@@ -20,4 +20,4 @@ inputVal(601:1200, :) = inputClass2(2401:3000, :);
 targetVal(1:600) = targetClass1(2401:3000, :);
 targetVal(601:1200) = targetClass2(2401:3000, :);
 
-scatter(inputVal(:, 1), inputVal(:, 2), 10);
+scatter(inputTrain(:, 1), inputTrain(:, 2), 10);
