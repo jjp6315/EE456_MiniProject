@@ -9,7 +9,7 @@ numHiddenLayer = 20;
 numOutputLayer = 1;
 % Activation Function is a hyperbolic tangent function
 % Threshold = 0
-epochs = 500;
+epochs = 1000;
 
 learningRate = 0.1;
 annealRate = (0.1-0.00001)/epochs;
@@ -35,6 +35,9 @@ biases_output = randn(numOutputLayer, 1);
 % Step 4
 
 for epoch = 1:epochs
+
+    training_error_accumulated = 0;
+
     for i = 1:6000
         
         z_in_j= zeros(numHiddenLayer, 1);
@@ -101,10 +104,21 @@ for epoch = 1:epochs
                 weights_hidden_output(q, 1) = weights_hidden_output(q, 1) + delta_w_jk(q, 1);
             end
         end
-
-        learningRate = learningRate - annealRate;
-
+        % disp(weights_input_hidden);
+        % disp(weights_hidden_output);
+                
+        training_error_accumulated = training_error_accumulated + 0.5 * (DataSet1_targets(i) - y_k)^2;
     end
+    learningRate = learningRate - annealRate;
+    TrainingError(epoch) = training_error_accumulated / 6000;
 end
 
+
+% Plotting the training error
+figure;
+plot(1:epochs, TrainingError, '-o', 'LineWidth', 2);
+title('Training Error Across Epochs');
+xlabel('Epoch');
+ylabel('Training Error');
+grid on;
 
