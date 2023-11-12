@@ -2,13 +2,13 @@ clear;
 clc;
 close all;
 
-load('DataSet2_MP1.mat');
+load('DataSet1_MP1.mat');
 
 % handle the data
-inputClass1 = DataSet2(1:3000, :);
-inputClass2 = DataSet2(3001:6000, :);
-targetClass1 = DataSet2_targets(1:3000);
-targetClass2 = DataSet2_targets(3001:6000);
+inputClass1 = DataSet1(1:3000, :);
+inputClass2 = DataSet1(3001:6000, :);
+targetClass1 = DataSet1_targets(1:3000);
+targetClass2 = DataSet1_targets(3001:6000);
 
 inputTrain = zeros(4800, 2);
 inputVal = zeros(1200, 2);
@@ -48,6 +48,7 @@ iteration_train = zeros(epochs);
 
 total_errors_val = zeros(epochs/10);
 iteration_val = zeros(epochs/10);
+
 
 % start the training
 for epoch = 1:epochs
@@ -163,8 +164,8 @@ plot(iteration_val, total_errors_val);
 
 
 % Create a grid of points to evaluate the decision boundary
-[x1, x2] = meshgrid(linspace(min(DataSet2(:, 1)), max(DataSet2(:, 1)), 100), ...
-                    linspace(min(DataSet2(:, 2)), max(DataSet2(:, 2)), 100));
+[x1, x2] = meshgrid(linspace(min(DataSet1(:, 1)), max(DataSet1(:, 1)), 100), ...
+                    linspace(min(DataSet1(:, 2)), max(DataSet1(:, 2)), 100));
 x_grid = [x1(:), x2(:)];
 
 % Forward pass to get predictions for each point in the grid
@@ -186,7 +187,7 @@ predictions_grid = reshape(predictions, size(x1));
 
 % Plot the data points
 figure;
-scatter(DataSet2(:, 1), DataSet2(:, 2), 20, DataSet2_targets, 'filled');
+scatter(DataSet1(:, 1), DataSet1(:, 2), 20, DataSet1_targets, 'filled');
 hold on;
 
 % Contour plot for decision boundary
